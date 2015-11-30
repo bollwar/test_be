@@ -1,0 +1,1487 @@
+<a href="http://github.com/chriso/io"><img alt="Fork me on GitHub" id="ribbon" src="http://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png"></a><html>
+	<head>
+		<title>io</title>
+		<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"></script>
+		<style>body {
+    margin: 0;
+    padding: 0;
+    font: 14px/1.5 'Palatino Linotype', 'Book Antiqua', Palatino, FreeSerif, serif;
+    color: #252519;
+}
+a {
+    color: #252519;
+}
+a:hover {
+    text-decoration: underline;
+    color: #19469D;
+}
+p {
+    margin: 12px 0;
+}
+h1, h2, h3 {
+    margin: 0;
+    padding: 0;
+}
+table#source {
+    width: 100%;
+    border-collapse: collapse;
+}
+table#source td:first-child {
+    padding: 30px 40px 30px 40px;
+    vertical-align: top;
+}
+table#source td:first-child,
+table#source td:first-child pre {
+    width: 450px;
+}
+table#source td:last-child {
+    padding: 30px 0 30px 40px;
+    border-left: 1px solid #E5E5EE;
+    background: #F5F5FF;
+}
+table#source tr {
+    border-bottom: 1px solid #E5E5EE;
+}
+table#source tr.filename {
+    padding-top: 40px;
+    border-top: 1px solid #E5E5EE;
+}
+table#source tr.filename td:first-child {
+    text-transform: capitalize;
+}
+table#source tr.filename td:last-child {
+    font-size: 12px;
+}
+table#source tr.filename h2 {
+    margin: 0;
+    padding: 0;
+    cursor: pointer;
+}
+table#source tr.code h1,
+table#source tr.code h2,
+table#source tr.code h3 {
+    margin-top: 30px;
+    font-family: "Lucida Grande", "Helvetica Nueue", Arial, sans-serif;
+    font-size: 18px;
+}
+table#source tr.code h2 {
+    font-size: 16px;
+}
+table#source tr.code h3 {
+    font-size: 14px;
+}
+table#source tr.code ul {
+    margin: 15px 0 15px 35px;
+    padding: 0;
+}
+table#source tr.code ul li {
+    margin: 0;
+    padding: 1px 0;
+}
+table#source tr.code ul li p {
+    margin: 0;
+    padding: 0;
+}
+table#source tr.code td:first-child pre {
+    padding: 20px;
+}
+#ribbon {
+    position: fixed;
+    top: 0;
+    right: 0;
+}
+code .string { color: #219161; }
+code .regexp { color: #219161; }
+code .keyword { color: #954121; }
+code .number { color: #19469D; }
+code .comment { color: #bbb; }
+code .this { color: #19469D; }</style>
+		<script>
+			$(function(){
+				$('tr.code').hide();
+				$('tr.filename').toggle(function(){
+					$(this).nextUntil('.filename').fadeIn();
+				}, function(){
+					$(this).nextUntil('.filename').fadeOut();
+				});
+			});
+		</script>
+	</head>
+	<body>
+<table id="source"><tbody><tr><td><h1>io</h1></td><td></td></tr><tr class="filename"><td><h2 id="lib/io.dns.js"><a href="#">io.dns</a></h2></td><td>lib/io.dns.js</td></tr><tr class="code">
+<td class="docs">
+<p>Module dependencies.
+ </p>
+</td>
+<td class="code">
+<pre><code><span class="keyword">var</span> <span class="variable">io</span> = <span class="variable">require</span>(<span class="string">'../'</span>)
+  , <span class="variable">dns</span> = <span class="variable">require</span>(<span class="string">'dns'</span>)</code></pre>
+</td>
+</tr>
+<tr class="code">
+<td class="docs">
+<p>Resolves a domain into the first found A (IPv4) or AAAA (IPv6) record.</p>
+
+<h2>Input</h2>
+
+<pre><code>A string containing a domain, e.g. 'google.com'
+An object containing a `url` key, e.g. { url: 'google.com }</code></pre>
+
+<h2>Output</h2>
+
+<pre><code>{ url: url, ip: ip, err: err }</code></pre>
+
+<h2>Options</h2>
+
+<pre><code>retries - the number of times to retry a failed request
+timeout - the number of seconds before failing
+family  - the IPv to lookup, 4 or 6</code></pre>
+
+<h2></h2>
+
+<ul><li><p><strong>param</strong>: <em>Object</em>  options (optional)</p></li><li><p><strong>return</strong>: <em>this</em></p></li><li><p><strong>api</strong>: <em>public</em></p></li></ul>
+</td>
+<td class="code">
+<pre><code><span class="variable">io</span>.<span class="variable">prototype</span>.<span class="variable">lookup</span> = <span class="keyword">function</span> (<span class="variable">options</span>) {
+    <span class="this">this</span>.<span class="keyword">default</span>(<span class="variable">arguments</span>, { <span class="variable">retries</span>: <span class="number integer">0</span>, <span class="variable">timeout</span>: <span class="number integer">5</span>, <span class="variable">family</span>: <span class="number integer">4</span> })
+
+    <span class="keyword">return</span> <span class="this">this</span>.<span class="variable">extend</span>(<span class="keyword">function</span> (<span class="variable">stream</span>, <span class="variable">io</span>) {
+        <span class="keyword">return</span> <span class="keyword">function</span> (<span class="variable">emit</span>, <span class="variable">end</span>) {
+            <span class="keyword">var</span> <span class="variable">ended</span> = <span class="variable">false</span>
+            <span class="variable">stream</span>(<span class="keyword">function</span> (<span class="variable">input</span>) {
+                <span class="variable">input</span> = <span class="variable">io</span>.<span class="variable">toObject</span>(<span class="variable">input</span>, <span class="string">'url'</span>)
+
+                <span class="variable">io</span>.<span class="variable">async</span>(<span class="variable">options</span>, <span class="keyword">function</span> (<span class="variable">callback</span>) {
+
+                    <span class="variable">dns</span>.<span class="variable">lookup</span>(<span class="variable">input</span>.<span class="variable">url</span>, <span class="variable">options</span>.<span class="variable">family</span>, <span class="variable">callback</span>)
+
+                }, <span class="keyword">function</span> (<span class="variable">err</span>, <span class="variable">ip</span>) {
+                    <span class="keyword">if</span> (<span class="class">Array</span>.<span class="variable">isArray</span>(<span class="variable">ip</span>) &<span class="variable">amp</span>;&<span class="variable">amp</span>; !<span class="variable">ip</span>.<span class="variable">length</span>) {
+                        <span class="variable">ip</span> = <span class="keyword">null</span>
+                    }
+                    <span class="variable">input</span>.<span class="variable">err</span> = <span class="variable">err</span>
+                    <span class="variable">input</span>.<span class="variable">ip</span> = <span class="variable">ip</span>
+
+                    <span class="variable">emit</span>(<span class="variable">input</span>)
+                    <span class="keyword">if</span> (<span class="variable">ended</span>) {
+                        <span class="variable">end</span> &<span class="variable">amp</span>;&<span class="variable">amp</span>; <span class="variable">end</span>()
+                    }
+                })
+
+            }, <span class="keyword">function</span> () {
+                <span class="variable">ended</span> = <span class="variable">true</span>
+            })
+        }
+    })
+}
+
+</code></pre>
+</td>
+</tr><tr class="filename"><td><h2 id="lib/io.fork.js"><a href="#">io.fork</a></h2></td><td>lib/io.fork.js</td></tr><tr class="code">
+<td class="docs">
+<p>Module dependencies.
+ </p>
+</td>
+<td class="code">
+<pre><code><span class="keyword">var</span> <span class="variable">io</span> = <span class="variable">require</span>(<span class="string">'../'</span>)
+  , <span class="variable">os</span> = <span class="variable">require</span>(<span class="string">'os'</span>)
+  , <span class="variable">net</span> = <span class="variable">require</span>(<span class="string">'net'</span>)
+  , <span class="variable">childProcess</span> = <span class="variable">require</span>(<span class="string">'child_process'</span>)
+  , <span class="variable">netBinding</span> = <span class="variable">process</span>.<span class="variable">binding</span>(<span class="string">'net'</span>)</code></pre>
+</td>
+</tr>
+<tr class="code">
+<td class="docs">
+<p>Is this the master process?
+ </p>
+</td>
+<td class="code">
+<pre><code><span class="keyword">var</span> <span class="variable">isMaster</span> = !<span class="variable">process</span>.<span class="variable">env</span>.<span class="variable">_CHILD_ID_</span></code></pre>
+</td>
+</tr>
+<tr class="code">
+<td class="docs">
+<p>Fork worker processes.</p>
+
+<h2></h2>
+
+<ul><li><p><strong>param</strong>: <em>Object</em>  workers (optional) - defaults to # of cores</p></li><li><p><strong>return</strong>: <em>this</em></p></li><li><p><strong>api</strong>: <em>public</em></p></li></ul>
+</td>
+<td class="code">
+<pre><code><span class="variable">io</span>.<span class="variable">prototype</span>.<span class="variable">fork</span> = <span class="keyword">function</span> (<span class="variable">workers</span>) {
+    <span class="this">this</span>.<span class="keyword">default</span>(<span class="variable">arguments</span>, <span class="variable">os</span>.<span class="variable">cpus</span>.<span class="variable">length</span>)
+
+    <span class="keyword">var</span> <span class="variable">nodes</span> = <span class="variable">spawnWorkers</span>(<span class="variable">workers</span>)
+      , <span class="variable">master</span>, <span class="variable">children</span> = []
+
+    <span class="comment">//The master receives this event on each spawn</span>
+    <span class="variable">nodes</span>.<span class="variable">addListener</span>(<span class="string">'child'</span>, <span class="keyword">function</span> (<span class="variable">stream</span>) {
+        <span class="variable">stream</span> = <span class="variable">frameStream</span>(<span class="variable">stream</span>)
+
+        <span class="variable">stream</span>.<span class="variable">addListener</span>(<span class="string">'message'</span>, <span class="keyword">function</span> (<span class="variable">data</span>) {
+            <span class="comment">//</span>
+        })
+
+        <span class="variable">children</span>.<span class="variable">push</span>(<span class="variable">stream</span>)
+        <span class="keyword">if</span> (--<span class="variable">workers</span>) {
+            <span class="comment">//All spawned..</span>
+        }
+    })
+
+    <span class="comment">//Each child receives this event</span>
+    <span class="variable">nodes</span>.<span class="variable">addListener</span>(<span class="string">''</span>, <span class="keyword">function</span> (<span class="variable">stream</span>) {
+        <span class="variable">stream</span> = <span class="variable">frameStream</span>(<span class="variable">stream</span>)
+
+        <span class="variable">stream</span>.<span class="variable">addListener</span>(<span class="string">'message'</span>, <span class="keyword">function</span> (<span class="variable">data</span>) {
+            <span class="comment">//</span>
+        })
+
+        <span class="variable">master</span> = <span class="variable">stream</span>
+    })
+
+    <span class="keyword">return</span> <span class="this">this</span>.<span class="variable">extend</span>(<span class="keyword">function</span> (<span class="variable">stream</span>, <span class="variable">io</span>) {
+        <span class="keyword">return</span> <span class="keyword">function</span> (<span class="variable">emit</span>, <span class="variable">end</span>) {
+
+            <span class="comment">//</span>
+
+            <span class="variable">stream</span>(<span class="keyword">function</span> (<span class="variable">input</span>) {
+                <span class="variable">emit</span>(<span class="variable">input</span>)
+            }, <span class="keyword">function</span> () {
+                <span class="variable">end</span> &<span class="variable">amp</span>;&<span class="variable">amp</span>; <span class="variable">end</span>()
+            })
+        }
+    })
+}</code></pre>
+</td>
+</tr>
+<tr class="code">
+<td class="docs">
+<p>Spawns child processes and sets up communication channels.</p>
+
+<h2></h2>
+
+<ul><li><p><strong>param</strong>: <em>Number</em>  num</p></li><li><p><strong>param</strong>: <em>String</em>  options (optional)</p></li><li><p><strong>return</strong>: <em>EventEmitter</em></p></li><li><p><strong>api</strong>: <em>public</em></p></li></ul>
+</td>
+<td class="code">
+<pre><code><span class="keyword">var</span> <span class="variable">spawnWorkers</span> = <span class="keyword">function</span> (<span class="variable">num</span>, <span class="variable">options</span>) {
+    <span class="keyword">var</span> <span class="variable">emitter</span> = <span class="keyword">new</span> <span class="variable">process</span>.<span class="class">EventEmitter</span>();
+
+    <span class="variable">options</span> = <span class="variable">options</span> || {};
+
+    <span class="keyword">if</span> (!<span class="variable">isMaster</span>) {
+
+        <span class="keyword">var</span> <span class="variable">stdin</span> = <span class="keyword">new</span> <span class="variable">net</span>.<span class="class">Stream</span>(<span class="number integer">0</span>, <span class="string">'unix'</span>)
+        <span class="keyword">var</span> <span class="variable">descriptorType</span>
+        <span class="variable">stdin</span>.<span class="variable">addListener</span>(<span class="string">'data'</span>, <span class="keyword">function</span> (<span class="variable">message</span>) {
+            <span class="variable">descriptorType</span> = <span class="variable">message</span>
+        });
+        <span class="variable">stdin</span>.<span class="variable">addListener</span>(<span class="string">'fd'</span>, <span class="keyword">function</span> (<span class="variable">fd</span>) {
+            <span class="keyword">if</span> (<span class="variable">descriptorType</span> == <span class="string">'master'</span>) {
+                <span class="keyword">var</span> <span class="variable">stream</span> = <span class="keyword">new</span> <span class="variable">net</span>.<span class="class">Stream</span>(<span class="variable">fd</span>, <span class="string">'unix'</span>)
+                <span class="variable">emitter</span>.<span class="variable">emit</span>(<span class="string">'master'</span>, <span class="variable">stream</span>)
+                <span class="variable">stream</span>.<span class="variable">resume</span>()
+            } <span class="keyword">else</span> {
+                <span class="keyword">throw</span> <span class="keyword">new</span> <span class="class">Error</span>(<span class="string">'Unknown file descriptor '</span> + <span class="variable">descriptorType</span>)
+            }
+        })
+        <span class="variable">stdin</span>.<span class="variable">resume</span>()
+
+    } <span class="keyword">else</span> {
+
+        <span class="keyword">var</span> <span class="variable">children</span> = [],
+            <span class="variable">numChildren</span> = <span class="variable">num</span> || <span class="number integer">1</span>,
+            <span class="variable">priorArgs</span> = <span class="variable">process</span>.<span class="variable">argv</span>
+
+        <span class="keyword">if</span> (<span class="variable">process</span>.<span class="variable">platform</span> === <span class="string">'cygwin'</span> &<span class="variable">amp</span>;&<span class="variable">amp</span>; <span class="variable">priorArgs</span>) {
+            <span class="variable">priorArgs</span> = [<span class="string">'/usr/bin/bash'</span>, <span class="string">'--login'</span>, <span class="string">'-c'</span>, <span class="string">'cd '</span> + <span class="variable">process</span>.<span class="variable">cwd</span>() + <span class="string">' &amp;&amp; '</span> + <span class="variable">priorArgs</span>.<span class="variable">join</span>(<span class="string">' '</span>)]
+        }
+
+        <span class="keyword">var</span> <span class="variable">env</span> = {}
+        <span class="keyword">for</span> (<span class="keyword">var</span> <span class="variable">i</span> <span class="keyword">in</span> <span class="variable">process</span>.<span class="variable">env</span>) {
+            <span class="variable">env</span>[<span class="variable">i</span>] = <span class="variable">process</span>.<span class="variable">env</span>[<span class="variable">i</span>]
+        }
+
+        <span class="keyword">var</span> <span class="variable">createChild</span> = <span class="keyword">function</span> (<span class="variable">i</span>) {
+
+            <span class="keyword">var</span> <span class="variable">childConnection</span> = <span class="variable">netBinding</span>.<span class="variable">socketpair</span>()
+            <span class="variable">env</span>.<span class="variable">_CHILD_ID_</span> = <span class="variable">i</span>
+
+            <span class="comment">//Spawn the child process</span>
+            <span class="keyword">var</span> <span class="variable">child</span> = <span class="variable">children</span>[<span class="variable">i</span>] = <span class="variable">childProcess</span>.<span class="variable">spawn</span>(
+                <span class="variable">priorArgs</span>[<span class="number integer">0</span>],
+                <span class="variable">priorArgs</span>.<span class="variable">slice</span>(<span class="number integer">1</span>),
+                <span class="variable">env</span>,
+                [<span class="variable">childConnection</span>[<span class="number integer">1</span>], <span class="number integer">1</span>, <span class="number integer">2</span>]
+            )
+            <span class="variable">child</span>.<span class="variable">master</span> = <span class="keyword">new</span> <span class="variable">net</span>.<span class="class">Stream</span>(<span class="variable">childConnection</span>[<span class="number integer">0</span>], <span class="string">'unix'</span>)
+
+            (<span class="keyword">function</span> (<span class="variable">child</span>) {
+                <span class="keyword">var</span> <span class="variable">masterChildConnection</span> = <span class="variable">netBinding</span>.<span class="variable">socketpair</span>()
+                <span class="variable">process</span>.<span class="variable">nextTick</span>(<span class="keyword">function</span> () {
+                    <span class="keyword">var</span> <span class="variable">stream</span> = <span class="keyword">new</span> <span class="variable">net</span>.<span class="class">Stream</span>(<span class="variable">masterChildConnection</span>[<span class="number integer">0</span>], <span class="string">'unix'</span>)
+                    <span class="variable">emitter</span>.<span class="variable">emit</span>(<span class="string">'child'</span>, <span class="variable">stream</span>)
+                    <span class="variable">stream</span>.<span class="variable">resume</span>()
+                    <span class="variable">child</span>.<span class="variable">master</span>.<span class="variable">write</span>(<span class="string">'master'</span>, <span class="string">'ascii'</span>, <span class="variable">masterChildConnection</span>[<span class="number integer">1</span>])
+                })
+            }(<span class="variable">child</span>))
+
+        }
+
+        <span class="keyword">for</span> (<span class="variable">i</span> = <span class="number integer">0</span>; <span class="variable">i</span> &<span class="variable">lt</span>; <span class="variable">numChildren</span>; <span class="variable">i</span>++) {
+            <span class="variable">createChild</span>(<span class="variable">i</span>)
+        }
+
+        [<span class="string">'SIGINT'</span>, <span class="string">'SIGTERM'</span>, <span class="string">'SIGKILL'</span>, <span class="string">'SIGQUIT'</span>, <span class="string">'SIGHUP'</span>, <span class="string">'exit'</span>].<span class="variable">forEach</span>(<span class="keyword">function</span> (<span class="variable">signal</span>) {
+            <span class="variable">process</span>.<span class="variable">addListener</span>(<span class="variable">signal</span>, <span class="keyword">function</span> () {
+                <span class="variable">children</span>.<span class="variable">forEach</span>(<span class="keyword">function</span> (<span class="variable">child</span>) {
+                    <span class="keyword">try</span> {
+                        <span class="variable">child</span>.<span class="variable">kill</span>()
+                    } <span class="keyword">catch</span> (<span class="variable">e</span>) {}
+                });
+                <span class="keyword">if</span> (<span class="variable">signal</span> !== <span class="string">'exit'</span> &<span class="variable">amp</span>;&<span class="variable">amp</span>; <span class="variable">signal</span> !== <span class="string">'SIGHUP'</span>) {
+                    <span class="variable">process</span>.<span class="variable">exit</span>()
+                }
+            })
+        })
+    }
+
+    <span class="keyword">return</span> <span class="variable">emitter</span>
+};</code></pre>
+</td>
+</tr>
+<tr class="code">
+<td class="docs">
+<p>Fast JSON parsing.
+ </p>
+</td>
+<td class="code">
+<pre><code><span class="keyword">var</span> <span class="variable">parse</span> = <span class="keyword">function</span> (<span class="variable">json</span>) {
+    <span class="keyword">return</span> <span class="variable">eval</span>(<span class="string">'('</span> + <span class="variable">json</span> + <span class="string">')'</span>)
+}</code></pre>
+</td>
+</tr>
+<tr class="code">
+<td class="docs">
+<p>Pass in a raw unframed binary stream and get a framed stream for sending and
+receiving JSON data.</p>
+
+<h2></h2>
+
+<ul><li><p><strong>param</strong>: <em>Object</em>  stream</p></li><li><p><strong>param</strong>: <em>Boolean</em>  trusted (optional) - use eval-based parsing (faster)</p></li><li><p><strong>api</strong>: <em>public</em></p></li></ul>
+</td>
+<td class="code">
+<pre><code><span class="keyword">var</span> <span class="variable">frameStream</span> = <span class="keyword">function</span> (<span class="variable">stream</span>) {
+    <span class="keyword">var</span> <span class="variable">emitter</span> = <span class="keyword">new</span> <span class="variable">process</span>.<span class="class">EventEmitter</span>(),
+        <span class="variable">buffered</span> = [], <span class="variable">start</span>
+
+    <span class="keyword">var</span> <span class="variable">condense_buffered</span> = <span class="keyword">function</span> () {
+        <span class="keyword">var</span> <span class="variable">totalSize</span> = <span class="number integer">0</span>
+        <span class="variable">buffered</span>.<span class="variable">forEach</span>(<span class="keyword">function</span> (<span class="variable">part</span>) {
+            <span class="variable">totalSize</span> += <span class="variable">part</span>.<span class="variable">length</span>
+        })
+        <span class="keyword">var</span> <span class="variable">buffer</span> = <span class="keyword">new</span> <span class="class">Buffer</span>(<span class="variable">totalSize</span>)
+        <span class="keyword">var</span> <span class="variable">index</span> = <span class="number integer">0</span>
+        <span class="variable">buffered</span>.<span class="variable">forEach</span>(<span class="keyword">function</span> (<span class="variable">part</span>) {
+            <span class="variable">part</span>.<span class="variable">copy</span>(<span class="variable">buffer</span>, <span class="variable">index</span>, <span class="number integer">0</span>, <span class="variable">part</span>.<span class="variable">length</span>)
+            <span class="variable">index</span> += <span class="variable">part</span>.<span class="variable">length</span>
+        })
+        <span class="variable">buffered</span> = []
+        <span class="keyword">return</span> <span class="variable">buffer</span>
+    }
+
+    <span class="variable">stream</span>.<span class="variable">addListener</span>(<span class="string">'data'</span>, <span class="keyword">function</span> (<span class="variable">data</span>) {
+        <span class="variable">start</span> = <span class="number integer">0</span>
+        <span class="keyword">for</span> (<span class="keyword">var</span> <span class="variable">i</span> = <span class="number integer">0</span>, <span class="variable">l</span> = <span class="variable">data</span>.<span class="variable">length</span>; <span class="variable">i</span> &<span class="variable">lt</span>; <span class="variable">l</span>; <span class="variable">i</span>++) {
+            <span class="keyword">var</span> <span class="variable">b</span> = <span class="variable">data</span>[<span class="variable">i</span>]
+            <span class="keyword">if</span> (<span class="variable">b</span> === <span class="number integer">0</span>) {
+                <span class="variable">start</span> = <span class="variable">i</span> + <span class="number integer">1</span>
+            } <span class="keyword">else</span> <span class="keyword">if</span> (<span class="variable">b</span> === <span class="number integer">255</span>) {
+                <span class="keyword">if</span> (<span class="variable">start</span> === <span class="variable">i</span>) {
+                    <span class="variable">emitter</span>.<span class="variable">emit</span>(<span class="string">'message'</span>, <span class="variable">parse</span>(<span class="variable">condense_buffered</span>().<span class="variable">toString</span>(<span class="string">'utf8'</span>)))
+                } <span class="keyword">else</span> {
+                    <span class="keyword">var</span> <span class="variable">buffer</span> = <span class="variable">data</span>.<span class="variable">slice</span>(<span class="variable">start</span>, <span class="variable">i</span>)
+                    <span class="keyword">if</span> (<span class="variable">buffered</span>.<span class="variable">length</span>) {
+                        <span class="variable">buffered</span>.<span class="variable">push</span>(<span class="variable">buffer</span>);
+                        <span class="variable">buffer</span> = <span class="variable">condense_buffered</span>()
+                    }
+                    <span class="variable">emitter</span>.<span class="variable">emit</span>(<span class="string">'message'</span>, <span class="variable">parse</span>(<span class="variable">buffer</span>.<span class="variable">toString</span>(<span class="string">'utf8'</span>, <span class="number integer">0</span>, <span class="variable">buffer</span>.<span class="variable">length</span>)))
+                }
+                <span class="variable">start</span> = <span class="variable">i</span> + <span class="number integer">1</span>
+            }
+        }
+        <span class="keyword">if</span> (<span class="variable">start</span> &<span class="variable">lt</span>; <span class="variable">l</span>) {
+            <span class="variable">buffered</span>.<span class="variable">push</span>(<span class="variable">data</span>.<span class="variable">slice</span>(<span class="variable">start</span>, <span class="variable">data</span>.<span class="variable">length</span>))
+        }
+    })
+
+    <span class="variable">emitter</span>.<span class="variable">send</span> = <span class="keyword">function</span> (<span class="variable">message</span>) {
+        <span class="keyword">var</span> <span class="variable">buffer</span> = <span class="keyword">new</span> <span class="class">Buffer</span>(<span class="class">JSON</span>.<span class="variable">stringify</span>(<span class="variable">message</span>), <span class="string">'utf8'</span>)
+        <span class="keyword">var</span> <span class="variable">framedBuffer</span> = <span class="keyword">new</span> <span class="class">Buffer</span>(<span class="variable">buffer</span>.<span class="variable">length</span> + <span class="number integer">2</span>)
+        <span class="variable">framedBuffer</span>[<span class="number integer">0</span>] = <span class="number integer">0</span>
+        <span class="variable">buffer</span>.<span class="variable">copy</span>(<span class="variable">framedBuffer</span>, <span class="number integer">1</span>, <span class="number integer">0</span>, <span class="variable">buffer</span>.<span class="variable">length</span>)
+        <span class="variable">framedBuffer</span>[<span class="variable">framedBuffer</span>.<span class="variable">length</span> - <span class="number integer">1</span>] = <span class="number integer">255</span>
+        <span class="variable">stream</span>.<span class="variable">write</span>(<span class="variable">framedBuffer</span>)
+    }
+
+    <span class="variable">emitter</span>.<span class="variable">on</span> = <span class="variable">emitter</span>.<span class="variable">addListener</span>
+
+    <span class="keyword">return</span> <span class="variable">emitter</span>
+}
+
+</code></pre>
+</td>
+</tr><tr class="filename"><td><h2 id="lib/io.functional.js"><a href="#">io.functional</a></h2></td><td>lib/io.functional.js</td></tr><tr class="code">
+<td class="docs">
+<p>Module dependencies.
+ </p>
+</td>
+<td class="code">
+<pre><code><span class="keyword">var</span> <span class="variable">io</span> = <span class="variable">require</span>(<span class="string">'../'</span>)</code></pre>
+</td>
+</tr>
+<tr class="code">
+<td class="docs">
+<p>Apply <code>fn</code> to each element in the stream.</p>
+
+<h2>Example</h2>
+
+<pre><code>range(1, 3).map('*2').each(console.log)</code></pre>
+
+<h2>Output</h2>
+
+<pre><code>2
+4
+6</code></pre>
+
+<h2></h2>
+
+<ul><li><p><strong>param</strong>: <em>Function</em>  fn</p></li><li><p><strong>return</strong>: <em>this</em></p></li><li><p><strong>api</strong>: <em>public</em></p></li></ul>
+</td>
+<td class="code">
+<pre><code><span class="variable">io</span>.<span class="variable">prototype</span>.<span class="variable">map</span> = <span class="keyword">function</span> (<span class="variable">fn</span>) {
+    <span class="variable">fn</span> = <span class="this">this</span>.<span class="variable">lambda</span>(<span class="variable">fn</span>)
+
+    <span class="keyword">return</span> <span class="this">this</span>.<span class="variable">extend</span>(<span class="keyword">function</span> (<span class="variable">stream</span>) {
+        <span class="keyword">return</span> <span class="keyword">function</span> (<span class="variable">emit</span>, <span class="variable">end</span>) {
+            <span class="variable">stream</span>(<span class="keyword">function</span> (<span class="variable">elem</span>) {
+                <span class="keyword">return</span> <span class="variable">emit</span>(<span class="variable">fn</span>(<span class="variable">elem</span>))
+            }, <span class="variable">end</span>)
+        }
+    })
+}</code></pre>
+</td>
+</tr>
+<tr class="code">
+<td class="docs">
+<p>Filter out elements in the stream if <code>fn(elem)</code> is false.</p>
+
+<h2>Example</h2>
+
+<pre><code>range(1, 5).filter('&gt;=4').each(console.log)</code></pre>
+
+<h2>Output</h2>
+
+<pre><code>4
+5</code></pre>
+
+<h2></h2>
+
+<ul><li><p><strong>param</strong>: <em>Function</em>  fn</p></li><li><p><strong>return</strong>: <em>this</em></p></li><li><p><strong>api</strong>: <em>public</em></p></li></ul>
+</td>
+<td class="code">
+<pre><code><span class="variable">io</span>.<span class="variable">prototype</span>.<span class="variable">filter</span> = <span class="variable">io</span>.<span class="variable">prototype</span>.<span class="variable">select</span> = <span class="keyword">function</span> (<span class="variable">fn</span>) {
+    <span class="variable">fn</span> = <span class="this">this</span>.<span class="variable">lambda</span>(<span class="variable">fn</span>)
+
+    <span class="keyword">return</span> <span class="this">this</span>.<span class="variable">extend</span>(<span class="keyword">function</span> (<span class="variable">stream</span>) {
+        <span class="keyword">return</span> <span class="keyword">function</span> (<span class="variable">emit</span>, <span class="variable">end</span>) {
+            <span class="variable">stream</span>(<span class="keyword">function</span> (<span class="variable">elem</span>) {
+                <span class="keyword">if</span> (<span class="variable">fn</span>(<span class="variable">elem</span>)) {
+                    <span class="keyword">if</span> (<span class="variable">false</span> === <span class="variable">emit</span>(<span class="variable">elem</span>)) {
+                        <span class="keyword">return</span> <span class="variable">false</span>
+                    }
+                }
+            }, <span class="variable">end</span>)
+        }
+    })
+}</code></pre>
+</td>
+</tr>
+<tr class="code">
+<td class="docs">
+<p>Filter out elements in the stream if <code>fn(elem)</code> is true.</p>
+
+<h2></h2>
+
+<ul><li><p><strong>param</strong>: <em>Function</em>  fn</p></li><li><p><strong>return</strong>: <em>this</em></p></li><li><p><strong>api</strong>: <em>public</em></p></li></ul>
+</td>
+<td class="code">
+<pre><code><span class="variable">io</span>.<span class="variable">prototype</span>.<span class="variable">reject</span> = <span class="keyword">function</span> (<span class="variable">fn</span>) {
+    <span class="variable">fn</span> = <span class="this">this</span>.<span class="variable">lambda</span>(<span class="variable">fn</span>)
+
+    <span class="keyword">return</span> <span class="this">this</span>.<span class="variable">extend</span>(<span class="keyword">function</span> (<span class="variable">stream</span>) {
+        <span class="keyword">return</span> <span class="keyword">function</span> (<span class="variable">emit</span>, <span class="variable">end</span>) {
+            <span class="variable">stream</span>(<span class="keyword">function</span> (<span class="variable">elem</span>) {
+                <span class="keyword">if</span> (!<span class="variable">fn</span>(<span class="variable">elem</span>)) {
+                    <span class="keyword">if</span> (<span class="variable">false</span> === <span class="variable">emit</span>(<span class="variable">elem</span>)) {
+                        <span class="keyword">return</span> <span class="variable">false</span>
+                    }
+                }
+            }, <span class="variable">end</span>)
+        }
+    })
+}</code></pre>
+</td>
+</tr>
+<tr class="code">
+<td class="docs">
+<p>Reduce elements in the stream.</p>
+
+<h2>Example</h2>
+
+<pre><code>range(1, 3).reduce('+').each(console.log)</code></pre>
+
+<h2>Output</h2>
+
+<pre><code>6</code></pre>
+
+<h2></h2>
+
+<ul><li><p><strong>param</strong>: <em>Mixed</em>  accumulator (optional)</p></li><li><p><strong>param</strong>: <em>Function</em>  fn</p></li><li><p><strong>return</strong>: <em>this</em></p></li><li><p><strong>api</strong>: <em>public</em></p></li></ul>
+</td>
+<td class="code">
+<pre><code><span class="variable">io</span>.<span class="variable">prototype</span>.<span class="variable">reduce</span> = <span class="keyword">function</span> (<span class="variable">accumulator</span>, <span class="variable">fn</span>) {
+    <span class="keyword">if</span> (<span class="variable">arguments</span>.<span class="variable">length</span> === <span class="number integer">1</span>) {
+        <span class="variable">fn</span> = <span class="variable">accumulator</span>
+        <span class="variable">accumulator</span> = <span class="variable">undefined</span>
+    }
+    <span class="variable">fn</span> = <span class="this">this</span>.<span class="variable">lambda</span>(<span class="variable">fn</span>)
+
+    <span class="keyword">return</span> <span class="this">this</span>.<span class="variable">extend</span>(<span class="keyword">function</span> (<span class="variable">stream</span>) {
+        <span class="keyword">return</span> <span class="keyword">function</span> (<span class="variable">emit</span>, <span class="variable">end</span>) {
+            <span class="variable">stream</span>(<span class="keyword">function</span> (<span class="variable">elem</span>) {
+                <span class="keyword">if</span> (<span class="variable">accumulator</span> === <span class="variable">undefined</span>) {
+                    <span class="variable">accumulator</span> = <span class="variable">elem</span>
+                }
+                <span class="variable">accumulator</span> = <span class="variable">fn</span>(<span class="variable">accumulator</span>, <span class="variable">elem</span>)
+            }, <span class="keyword">function</span> () {
+                <span class="variable">emit</span>(<span class="variable">accumulator</span>)
+                <span class="variable">end</span> &<span class="variable">amp</span>;&<span class="variable">amp</span>; <span class="variable">end</span>()
+            })
+        }
+    })
+}</code></pre>
+</td>
+</tr>
+<tr class="code">
+<td class="docs">
+<p>Compress elements in the stream into a single array.</p>
+
+<h2>Example</h2>
+
+<pre><code>range(1, 3).compress().each(console.log)</code></pre>
+
+<h2>Output</h2>
+
+<pre><code>[1,2,3]</code></pre>
+
+<ul><li><p><strong>return</strong>: <em>this</em></p></li><li><p><strong>api</strong>: <em>public</em></p></li></ul>
+</td>
+<td class="code">
+<pre><code><span class="variable">io</span>.<span class="variable">prototype</span>.<span class="variable">compress</span> = <span class="keyword">function</span> () {
+    <span class="keyword">return</span> <span class="this">this</span>.<span class="variable">extend</span>(<span class="keyword">function</span> (<span class="variable">stream</span>) {
+        <span class="keyword">return</span> <span class="keyword">function</span> (<span class="variable">emit</span>, <span class="variable">end</span>) {
+            <span class="keyword">var</span> <span class="variable">arr</span> = []
+            <span class="variable">stream</span>(<span class="keyword">function</span> (<span class="variable">elem</span>) {
+                <span class="variable">arr</span>.<span class="variable">push</span>(<span class="variable">elem</span>)
+            }, <span class="keyword">function</span> (<span class="variable">err</span>) {
+                <span class="variable">emit</span>(<span class="variable">arr</span>)
+                <span class="variable">end</span> &<span class="variable">amp</span>;&<span class="variable">amp</span>; <span class="variable">end</span>()
+            })
+        }
+    })
+}</code></pre>
+</td>
+</tr>
+<tr class="code">
+<td class="docs">
+<p>Partition elements into arrays of size <code>num</code>.</p>
+
+<h2>Example</h2>
+
+<pre><code>range(1, 8).partition(3).each(console.log)</code></pre>
+
+<h2>Output</h2>
+
+<pre><code>[1,2,3]
+[4,5,6]
+[7,8]</code></pre>
+
+<ul><li><p><strong>return</strong>: <em>this</em></p></li><li><p><strong>api</strong>: <em>public</em></p></li></ul>
+</td>
+<td class="code">
+<pre><code><span class="variable">io</span>.<span class="variable">prototype</span>.<span class="variable">partition</span> = <span class="keyword">function</span> (<span class="variable">num</span>) {
+    <span class="this">this</span>.<span class="keyword">default</span>(<span class="variable">arguments</span>, <span class="number integer">1</span>)
+
+    <span class="keyword">return</span> <span class="this">this</span>.<span class="variable">extend</span>(<span class="keyword">function</span> (<span class="variable">stream</span>) {
+        <span class="keyword">return</span> <span class="keyword">function</span> (<span class="variable">emit</span>, <span class="variable">end</span>) {
+            <span class="keyword">var</span> <span class="variable">elems</span> = [], <span class="variable">len</span> = <span class="number integer">0</span>, <span class="variable">ended</span> = <span class="variable">false</span>
+            <span class="variable">stream</span>(<span class="keyword">function</span> (<span class="variable">elem</span>) {
+                <span class="variable">elems</span>[<span class="variable">len</span>++] = <span class="variable">elem</span>
+                <span class="keyword">if</span> (<span class="variable">len</span> === <span class="variable">num</span>) {
+                    <span class="keyword">if</span> (<span class="variable">false</span> === <span class="variable">emit</span>(<span class="variable">elems</span>)) {
+                        <span class="variable">ended</span> = <span class="variable">true</span>
+                        <span class="keyword">return</span> <span class="variable">false</span>
+                    }
+                    <span class="variable">elems</span> = []
+                    <span class="variable">len</span> = <span class="number integer">0</span>
+                }
+            }, <span class="keyword">function</span> () {
+                <span class="keyword">if</span> (<span class="variable">len</span> &<span class="variable">amp</span>;&<span class="variable">amp</span>; !<span class="variable">ended</span>) {
+                    <span class="variable">emit</span>(<span class="variable">elems</span>)
+                }
+                <span class="variable">end</span> &<span class="variable">amp</span>;&<span class="variable">amp</span>; <span class="variable">end</span>()
+            })
+        }
+    })
+}</code></pre>
+</td>
+</tr>
+<tr class="code">
+<td class="docs">
+<p>If an element is an array, emit each element from within it separately.</p>
+
+<h2>Example</h2>
+
+<pre><code>arguments([1,2],[3,4]).flatten().each(console.log)</code></pre>
+
+<h2>Output</h2>
+
+<pre><code>1
+2
+3
+4</code></pre>
+
+<ul><li><p><strong>return</strong>: <em>this</em></p></li><li><p><strong>api</strong>: <em>public</em></p></li></ul>
+</td>
+<td class="code">
+<pre><code><span class="variable">io</span>.<span class="variable">prototype</span>.<span class="variable">flatten</span> = <span class="keyword">function</span> () {
+    <span class="keyword">return</span> <span class="this">this</span>.<span class="variable">extend</span>(<span class="keyword">function</span> (<span class="variable">stream</span>) {
+        <span class="keyword">return</span> <span class="keyword">function</span> (<span class="variable">emit</span>, <span class="variable">end</span>) {
+            <span class="variable">stream</span>(<span class="keyword">function</span> (<span class="variable">elem</span>) {
+                <span class="keyword">if</span> (!<span class="class">Array</span>.<span class="variable">isArray</span>(<span class="variable">elem</span>)) {
+                    <span class="keyword">return</span> <span class="variable">emit</span>(<span class="variable">elem</span>)
+                }
+                <span class="keyword">for</span> (<span class="keyword">var</span> <span class="variable">i</span> = <span class="number integer">0</span>, <span class="variable">l</span> = <span class="variable">elem</span>.<span class="variable">length</span>; <span class="variable">i</span> &<span class="variable">lt</span>; <span class="variable">l</span>; <span class="variable">i</span>++) {
+                    <span class="keyword">if</span> (<span class="variable">false</span> === <span class="variable">emit</span>(<span class="variable">elem</span>[<span class="variable">i</span>])) {
+                        <span class="keyword">return</span> <span class="variable">false</span>
+                    }
+                }
+            }, <span class="variable">end</span>)
+        }
+    })
+}</code></pre>
+</td>
+</tr>
+<tr class="code">
+<td class="docs">
+<p>Pluck a key from each element.</p>
+
+<h2>Example</h2>
+
+<pre><code>arguments({foo:'bar'}).pluck('foo').each(console.log)</code></pre>
+
+<h2>Output</h2>
+
+<pre><code>bar</code></pre>
+
+<h2></h2>
+
+<ul><li><p><strong>param</strong>: <em>String</em>  key</p></li><li><p><strong>return</strong>: <em>this</em></p></li><li><p><strong>api</strong>: <em>public</em></p></li></ul>
+</td>
+<td class="code">
+<pre><code><span class="variable">io</span>.<span class="variable">prototype</span>.<span class="variable">pluck</span> = <span class="keyword">function</span> (<span class="variable">key</span>) {
+    <span class="keyword">if</span> (<span class="variable">arguments</span>.<span class="variable">length</span> === <span class="number integer">1</span>) {
+        <span class="keyword">return</span> <span class="this">this</span>.<span class="variable">map</span>(<span class="keyword">function</span> (<span class="variable">elem</span>) {
+            <span class="keyword">return</span> <span class="variable">elem</span>[<span class="variable">key</span>] || <span class="keyword">null</span>
+        })
+    } <span class="keyword">else</span> {
+        <span class="keyword">var</span> <span class="variable">keys</span> = <span class="this">this</span>.<span class="variable">collect</span>(<span class="variable">arguments</span>), <span class="variable">l</span> = <span class="variable">keys</span>.<span class="variable">length</span>
+        <span class="keyword">return</span> <span class="this">this</span>.<span class="variable">map</span>(<span class="keyword">function</span> (<span class="variable">elem</span>) {
+            <span class="keyword">var</span> <span class="variable">arr</span> = []
+            <span class="keyword">for</span> (<span class="variable">i</span> = <span class="number integer">0</span>; <span class="variable">i</span> &<span class="variable">lt</span>; <span class="variable">l</span>; <span class="variable">i</span>++) {
+                <span class="variable">arr</span>[<span class="variable">i</span>] = <span class="variable">elem</span>[<span class="variable">keys</span>[<span class="variable">i</span>]] || <span class="keyword">null</span>
+            }
+            <span class="keyword">return</span> <span class="variable">arr</span>
+        })
+    }
+}</code></pre>
+</td>
+</tr>
+<tr class="code">
+<td class="docs">
+<p>Unpluck each element into a new object.</p>
+
+<h2>Example</h2>
+
+<pre><code>arguments('bar').unpluck('foo').each(console.log)</code></pre>
+
+<h2>Output</h2>
+
+<pre><code>{ foo: 'bar' }</code></pre>
+
+<h2></h2>
+
+<ul><li><p><strong>param</strong>: <em>String</em>  key</p></li><li><p><strong>return</strong>: <em>this</em></p></li><li><p><strong>api</strong>: <em>public</em></p></li></ul>
+</td>
+<td class="code">
+<pre><code><span class="variable">io</span>.<span class="variable">prototype</span>.<span class="variable">unpluck</span> = <span class="keyword">function</span> (<span class="variable">key</span>) {
+    <span class="keyword">if</span> (<span class="variable">arguments</span>.<span class="variable">length</span> === <span class="number integer">1</span>) {
+        <span class="keyword">return</span> <span class="this">this</span>.<span class="variable">map</span>(<span class="keyword">function</span> (<span class="variable">elem</span>) {
+            <span class="keyword">var</span> <span class="variable">obj</span> = {}
+            <span class="variable">obj</span>[<span class="variable">key</span>] = <span class="variable">elem</span>
+            <span class="keyword">return</span> <span class="variable">obj</span>
+        })
+    } <span class="keyword">else</span> {
+        <span class="keyword">var</span> <span class="variable">keys</span> = <span class="this">this</span>.<span class="variable">collect</span>(<span class="variable">arguments</span>), <span class="variable">l</span> = <span class="variable">keys</span>.<span class="variable">length</span>
+        <span class="keyword">return</span> <span class="this">this</span>.<span class="variable">map</span>(<span class="keyword">function</span> (<span class="variable">elem</span>) {
+            <span class="keyword">var</span> <span class="variable">obj</span> = {}
+            <span class="keyword">for</span> (<span class="variable">i</span> = <span class="number integer">0</span>; <span class="variable">i</span> &<span class="variable">lt</span>; <span class="variable">l</span>; <span class="variable">i</span>++) {
+                <span class="variable">obj</span>[<span class="variable">keys</span>[<span class="variable">i</span>]] = <span class="variable">elem</span>[<span class="variable">i</span>] || <span class="keyword">null</span>
+            }
+            <span class="keyword">return</span> <span class="variable">obj</span>
+        })
+    }
+}</code></pre>
+</td>
+</tr>
+<tr class="code">
+<td class="docs">
+<p>Count the number of elements in the stream.</p>
+
+<h2>Example</h2>
+
+<pre><code>arguments(1,2,3,4).count().each(console.log)</code></pre>
+
+<h2>Output</h2>
+
+<pre><code>4</code></pre>
+
+<ul><li><p><strong>return</strong>: <em>this</em></p></li><li><p><strong>api</strong>: <em>public</em></p></li></ul>
+</td>
+<td class="code">
+<pre><code><span class="variable">io</span>.<span class="variable">prototype</span>.<span class="variable">count</span> = <span class="keyword">function</span> () {
+    <span class="keyword">return</span> <span class="this">this</span>.<span class="variable">extend</span>(<span class="keyword">function</span> (<span class="variable">stream</span>) {
+        <span class="keyword">return</span> <span class="keyword">function</span> (<span class="variable">emit</span>, <span class="variable">end</span>) {
+            <span class="keyword">var</span> <span class="variable">count</span> = <span class="number integer">0</span>
+            <span class="variable">stream</span>(<span class="keyword">function</span> (<span class="variable">elem</span>) {
+                <span class="variable">count</span>++
+            }, <span class="keyword">function</span> (<span class="variable">err</span>) {
+                <span class="variable">emit</span>(<span class="variable">count</span>)
+                <span class="variable">end</span> &<span class="variable">amp</span>;&<span class="variable">amp</span>; <span class="variable">end</span>()
+            })
+        }
+    })
+}
+
+</code></pre>
+</td>
+</tr><tr class="filename"><td><h2 id="lib/io.request.js"><a href="#">io.request</a></h2></td><td>lib/io.request.js</td></tr><tr class="code">
+<td class="docs">
+<p>Module dependencies.
+ </p>
+</td>
+<td class="code">
+<pre><code><span class="keyword">var</span> <span class="variable">io</span> = <span class="variable">require</span>(<span class="string">'../'</span>)
+  , <span class="variable">request</span> = <span class="variable">require</span>(<span class="string">'request'</span>)
+  , <span class="variable">jsdom</span> = <span class="variable">require</span>(<span class="string">'jsdom'</span>)
+  , <span class="variable">fs</span> = <span class="variable">require</span>(<span class="string">'fs'</span>)
+  , <span class="variable">jquery</span> = <span class="variable">__dirname</span> + <span class="string">'/../support/jquery-1.6.4.min.js'</span></code></pre>
+</td>
+</tr>
+<tr class="code">
+<td class="docs">
+<p>Ignore parser errors.
+ </p>
+</td>
+<td class="code">
+<pre><code><span class="variable">jsdom</span>.<span class="variable">dom</span>.<span class="variable">level3</span>.<span class="variable">core</span>.<span class="class">Node</span>.<span class="variable">prototype</span>.<span class="variable">trigger</span> = <span class="keyword">function</span> () {}</code></pre>
+</td>
+</tr>
+<tr class="code">
+<td class="docs">
+<p>Load jQuery.
+ </p>
+</td>
+<td class="code">
+<pre><code><span class="variable">jquery</span> = <span class="variable">fs</span>.<span class="variable">readFileSync</span>(<span class="variable">jquery</span>).<span class="variable">toString</span>()</code></pre>
+</td>
+</tr>
+<tr class="code">
+<td class="docs">
+<p>Make an HTTP request.</p>
+
+<h2>Input</h2>
+
+<pre><code>A string containing a URL, e.g. 'http://www.google.com'
+An object containing a `url` key, e.g. { url: 'google.com }</code></pre>
+
+<h2>Output</h2>
+
+<pre><code>{ url: url, response: response, err: err, $: $ }</code></pre>
+
+<h2>Options</h2>
+
+<pre><code>retries - the number of times to retry a failed request
+timeout - the number of seconds before failing
+jquery  - whether to include the $ jquery object</code></pre>
+
+<h2></h2>
+
+<ul><li><p><strong>param</strong>: <em>Object</em>  options (optional)</p></li><li><p><strong>return</strong>: <em>this</em></p></li><li><p><strong>api</strong>: <em>public</em></p></li></ul>
+</td>
+<td class="code">
+<pre><code><span class="variable">io</span>.<span class="variable">prototype</span>.<span class="variable">request</span> = <span class="keyword">function</span> (<span class="variable">options</span>) {
+    <span class="this">this</span>.<span class="keyword">default</span>(<span class="variable">arguments</span>, { <span class="variable">retries</span>: <span class="number integer">0</span>, <span class="variable">timeout</span>: <span class="number integer">30</span>, <span class="variable">jquery</span>: <span class="variable">false</span> })
+
+    <span class="variable">options</span>.<span class="variable">timeout</span> *= <span class="number integer">1000</span>
+
+    <span class="keyword">var</span> <span class="variable">req</span> = <span class="variable">request</span>.<span class="variable">defaults</span>(<span class="variable">options</span>)
+
+    <span class="keyword">return</span> <span class="this">this</span>.<span class="variable">extend</span>(<span class="keyword">function</span> (<span class="variable">stream</span>, <span class="variable">io</span>) {
+        <span class="keyword">return</span> <span class="keyword">function</span> (<span class="variable">emit</span>, <span class="variable">end</span>) {
+            <span class="keyword">var</span> <span class="variable">ended</span> = <span class="variable">false</span>
+            <span class="variable">stream</span>(<span class="keyword">function</span> (<span class="variable">input</span>) {
+                <span class="variable">input</span> = <span class="variable">io</span>.<span class="variable">toObject</span>(<span class="variable">input</span>, <span class="string">'url'</span>)
+
+                <span class="keyword">if</span> (<span class="variable">input</span>.<span class="variable">timeout</span>) {
+                    <span class="variable">input</span>.<span class="variable">timeout</span> *= <span class="number integer">1000</span>
+                }
+
+                <span class="variable">io</span>.<span class="variable">async</span>(<span class="variable">options</span>, <span class="keyword">function</span> (<span class="variable">callback</span>) {
+
+                    <span class="variable">req</span>(<span class="variable">input</span>, <span class="variable">callback</span>)
+
+                }, <span class="keyword">function</span> (<span class="variable">err</span>, <span class="variable">response</span>) {
+                    <span class="variable">input</span>.<span class="variable">response</span> = <span class="variable">response</span>
+
+                    <span class="keyword">if</span> (!<span class="variable">options</span>.<span class="variable">jquery</span>) {
+                        <span class="variable">emit</span>(<span class="variable">input</span>)
+                        <span class="keyword">return</span> <span class="variable">ended</span> &<span class="variable">amp</span>;&<span class="variable">amp</span>; <span class="variable">end</span> &<span class="variable">amp</span>;&<span class="variable">amp</span>; <span class="variable">end</span>()
+                    }
+
+                    <span class="variable">jsdom</span>.<span class="variable">env</span>({ <span class="variable">html</span>: <span class="variable">response</span>.<span class="variable">body</span>, <span class="variable">src</span>: [<span class="variable">jquery</span>], <span class="variable">done</span>: <span class="keyword">function</span> (<span class="variable">err</span>, <span class="variable">window</span>) {
+                        <span class="keyword">if</span> (<span class="variable">err</span>) {
+                            <span class="variable">input</span>.<span class="variable">err</span> = <span class="variable">err</span>
+                        } <span class="keyword">else</span> {
+                            <span class="variable">input</span>.<span class="variable">response</span>.<span class="variable">window</span> = <span class="variable">window</span>
+                            <span class="variable">input</span>.$ = <span class="variable">window</span>.$
+                        }
+                        <span class="variable">emit</span>(<span class="variable">input</span>)
+                        <span class="variable">ended</span> &<span class="variable">amp</span>;&<span class="variable">amp</span>; <span class="variable">end</span> &<span class="variable">amp</span>;&<span class="variable">amp</span>; <span class="variable">end</span>()
+                    }})
+
+                })
+
+            }, <span class="keyword">function</span> () {
+                <span class="variable">ended</span> = <span class="variable">true</span>
+            })
+        }
+    })
+}</code></pre>
+</td>
+</tr>
+<tr class="code">
+<td class="docs">
+<p>An alias for <code>request({ jquery: true })</code>.
+ </p>
+</td>
+<td class="code">
+<pre><code><span class="variable">io</span>.<span class="variable">prototype</span>.<span class="variable">jquery</span> = <span class="keyword">function</span> (<span class="variable">options</span>) {
+    <span class="variable">options</span> = <span class="variable">options</span> || {}
+    <span class="variable">options</span>.<span class="variable">jquery</span> = <span class="variable">true</span>
+    <span class="keyword">return</span> <span class="this">this</span>.<span class="variable">request</span>(<span class="variable">options</span>)
+}
+
+</code></pre>
+</td>
+</tr><tr class="filename"><td><h2 id="lib/io.stream.js"><a href="#">io.stream</a></h2></td><td>lib/io.stream.js</td></tr><tr class="code">
+<td class="docs">
+<p>Module dependencies.
+ </p>
+</td>
+<td class="code">
+<pre><code><span class="keyword">var</span> <span class="variable">io</span> = <span class="variable">require</span>(<span class="string">'../'</span>)
+  , <span class="variable">fs</span> = <span class="variable">require</span>(<span class="string">'fs'</span>)
+  , <span class="class">Stream</span> = <span class="variable">require</span>(<span class="string">'events'</span>).<span class="class">EventEmitter</span></code></pre>
+</td>
+</tr>
+<tr class="code">
+<td class="docs">
+<p>Write each element to a stream or file.</p>
+
+<h2></h2>
+
+<ul><li><p><strong>param</strong>: <em>WritableStream | String</em>  stream - or a filename</p></li><li><p><strong>param</strong>: <em>String</em>  separator (optional) - defaults to \n</p></li><li><p><strong>param</strong>: <em>String</em>  encoding (optional) - defaults to utf8</p></li><li><p><strong>return</strong>: <em>this</em></p></li><li><p><strong>api</strong>: <em>public</em></p></li></ul>
+</td>
+<td class="code">
+<pre><code><span class="variable">io</span>.<span class="variable">prototype</span>.<span class="variable">write</span> = <span class="keyword">function</span> (<span class="variable">stream</span>, <span class="variable">separator</span>, <span class="variable">encoding</span>) {
+    <span class="this">this</span>.<span class="keyword">default</span>(<span class="variable">arguments</span>, <span class="keyword">null</span>, <span class="string">'\n'</span>, <span class="string">'utf8'</span>)
+
+    <span class="keyword">if</span> (!<span class="variable">stream</span>) {
+        <span class="variable">stream</span> = <span class="variable">process</span>.<span class="variable">stdout</span>
+    } <span class="keyword">else</span> <span class="keyword">if</span> (!(<span class="variable">stream</span> <span class="variable">instanceof</span> <span class="class">Stream</span>)) {
+        <span class="variable">stream</span> = <span class="variable">fs</span>.<span class="variable">createWriteStream</span>(<span class="variable">stream</span>, { <span class="variable">encoding</span>: <span class="variable">encoding</span> })
+    }
+
+    <span class="this">this</span>.<span class="variable">stream</span>(<span class="keyword">function</span> (<span class="variable">elem</span>) {
+        <span class="variable">stream</span>.<span class="variable">write</span>(<span class="variable">elem</span> + <span class="variable">separator</span>)
+    })
+
+    <span class="keyword">return</span> <span class="this">this</span>
+}</code></pre>
+</td>
+</tr>
+<tr class="code">
+<td class="docs">
+<p>Read elements from a stream or file.</p>
+
+<h2></h2>
+
+<ul><li><p><strong>param</strong>: <em>ReadableStream | String</em>  stream - or filename</p></li><li><p><strong>param</strong>: <em>String</em>  separator (optional) - defaults to \n</p></li><li><p><strong>param</strong>: <em>String</em>  encoding (optional) - defaults to utf8</p></li><li><p><strong>return</strong>: <em>this</em></p></li><li><p><strong>api</strong>: <em>public</em></p></li></ul>
+</td>
+<td class="code">
+<pre><code><span class="variable">io</span>.<span class="variable">prototype</span>.<span class="variable">read</span> = <span class="keyword">function</span> (<span class="variable">stream</span>, <span class="variable">separator</span>, <span class="variable">encoding</span>) {
+    <span class="this">this</span>.<span class="keyword">default</span>(<span class="variable">arguments</span>, <span class="keyword">null</span>, <span class="string">'\n'</span>, <span class="string">'utf8'</span>)
+
+    <span class="keyword">if</span> (!<span class="variable">stream</span>) {
+        <span class="variable">stream</span> = <span class="variable">process</span>.<span class="variable">stdin</span>
+    } <span class="keyword">else</span> <span class="keyword">if</span> (!(<span class="variable">stream</span> <span class="variable">instanceof</span> <span class="class">Stream</span>)) {
+        <span class="variable">stream</span> = <span class="variable">fs</span>.<span class="variable">createReadStream</span>(<span class="variable">stream</span>)
+    }
+    <span class="variable">stream</span>.<span class="variable">setEncoding</span>(<span class="variable">encoding</span>)
+
+    <span class="keyword">return</span> <span class="this">this</span>.<span class="variable">extend</span>(<span class="keyword">function</span> () {
+        <span class="keyword">return</span> <span class="keyword">function</span> (<span class="variable">emit</span>, <span class="variable">end</span>) {
+            <span class="keyword">var</span> <span class="variable">elems</span> = [], <span class="variable">data</span> = <span class="string">''</span>, <span class="variable">i</span>, <span class="variable">l</span>
+            <span class="variable">stream</span>.<span class="variable">resume</span>()
+            <span class="variable">stream</span>.<span class="variable">on</span>(<span class="string">'data'</span>, <span class="keyword">function</span> (<span class="variable">chunk</span>) {
+                <span class="variable">data</span> += <span class="variable">chunk</span>
+                <span class="keyword">if</span> (<span class="variable">separator</span>) {
+                    <span class="variable">elems</span> = <span class="variable">data</span>.<span class="variable">split</span>(<span class="variable">separator</span>)
+                    <span class="variable">data</span> = <span class="variable">elems</span>.<span class="variable">pop</span>()
+                    <span class="keyword">for</span> (<span class="variable">i</span> = <span class="number integer">0</span>, <span class="variable">l</span> = <span class="variable">elems</span>.<span class="variable">length</span>; <span class="variable">i</span> &<span class="variable">lt</span>; <span class="variable">l</span>; <span class="variable">i</span>++) {
+                        <span class="keyword">if</span> (<span class="variable">false</span> === <span class="variable">emit</span>(<span class="variable">elems</span>[<span class="variable">i</span>])) {
+                            <span class="variable">stream</span>.<span class="variable">pause</span>()
+                            <span class="keyword">return</span> <span class="variable">false</span>
+                        }
+                    }
+                }
+            }).<span class="variable">on</span>(<span class="string">'end'</span>, <span class="keyword">function</span> () {
+                <span class="keyword">if</span> (<span class="variable">data</span>) {
+                    <span class="variable">emit</span>(<span class="variable">data</span>)
+                }
+                <span class="variable">end</span> &<span class="variable">amp</span>;&<span class="variable">amp</span>; <span class="variable">end</span>()
+            }).<span class="variable">on</span>(<span class="string">'error'</span>, <span class="keyword">function</span> (<span class="variable">err</span>) {
+                <span class="variable">end</span> &<span class="variable">amp</span>;&<span class="variable">amp</span>; <span class="variable">end</span>(<span class="variable">err</span>)
+            })
+        }
+    })
+}</code></pre>
+</td>
+</tr>
+<tr class="code">
+<td class="docs">
+<p>Throttle the flow of stream elements.</p>
+
+<h2>Examples</h2>
+
+<pre><code>throttle(1, 1);   //Let one through each second
+throttle(10, 60); //Let ten through a minute</code></pre>
+
+<h2></h2>
+
+<ul><li><p><strong>param</strong>: <em>Integer</em>  allow_through - the number of elements to let through</p></li><li><p><strong>param</strong>: <em>Integer</em>  timeframe (optional) - default is 1 second</p></li><li><p><strong>return</strong>: <em>this</em></p></li><li><p><strong>api</strong>: <em>public</em></p></li></ul>
+</td>
+<td class="code">
+<pre><code><span class="variable">io</span>.<span class="variable">prototype</span>.<span class="variable">throttle</span> = <span class="keyword">function</span> (<span class="variable">allow_through</span>, <span class="variable">timeframe</span>) {
+    <span class="this">this</span>.<span class="keyword">default</span>(<span class="variable">arguments</span>, <span class="number integer">10</span>, <span class="number integer">1</span>)
+
+    <span class="keyword">return</span> <span class="this">this</span>.<span class="variable">extend</span>(<span class="keyword">function</span> (<span class="variable">stream</span>) {
+        <span class="keyword">return</span> <span class="keyword">function</span> (<span class="variable">emit</span>, <span class="variable">end</span>) {
+            <span class="keyword">var</span> <span class="variable">buffer</span> = []
+              , <span class="variable">buffer_len</span> = <span class="number integer">0</span>
+              , <span class="variable">flowing</span> = <span class="variable">true</span>
+              , <span class="variable">remaining</span> = <span class="variable">allow_through</span>
+              , <span class="variable">ended</span> = <span class="variable">false</span>
+              , <span class="variable">interval</span>
+
+            <span class="keyword">function</span> <span class="variable">endWith</span>(<span class="variable">err</span>) {
+                <span class="variable">clearInterval</span>(<span class="variable">interval</span>)
+                <span class="variable">end</span> &<span class="variable">amp</span>;&<span class="variable">amp</span>; <span class="variable">end</span>(<span class="variable">err</span>)
+            }
+
+            <span class="keyword">function</span> <span class="variable">tick</span>() {
+                <span class="keyword">while</span> (<span class="variable">flowing</span> &<span class="variable">amp</span>;&<span class="variable">amp</span>; <span class="variable">buffer_len</span>) {
+                    <span class="variable">emit</span>(<span class="variable">buffer</span>.<span class="variable">shift</span>())
+                    <span class="variable">buffer_len</span>--
+                    <span class="keyword">if</span> (!--<span class="variable">remaining</span>) {
+                        <span class="variable">flowing</span> = <span class="variable">false</span>
+                        <span class="keyword">if</span> (<span class="variable">ended</span> &<span class="variable">amp</span>;&<span class="variable">amp</span>; <span class="variable">buffer_len</span> === <span class="number integer">00</span>) {
+                            <span class="variable">endWith</span>()
+                        }
+                    }
+                }
+            }
+
+            <span class="variable">interval</span> = <span class="variable">setInterval</span>(<span class="keyword">function</span> () {
+                <span class="variable">flowing</span> = <span class="variable">true</span>
+                <span class="variable">remaining</span> = <span class="variable">allow_through</span>
+                <span class="variable">tick</span>()
+            }, <span class="number integer">1000</span> * <span class="variable">timeframe</span>)
+
+            <span class="variable">stream</span>(<span class="keyword">function</span> (<span class="variable">elem</span>) {
+                <span class="variable">buffer</span>.<span class="variable">push</span>(<span class="variable">elem</span>)
+                <span class="variable">buffer_len</span>++
+                <span class="variable">tick</span>()
+            }, <span class="keyword">function</span> (<span class="variable">err</span>) {
+                <span class="keyword">if</span> (<span class="variable">err</span>) {
+                    <span class="variable">endWith</span>(<span class="variable">err</span>)
+                }
+                <span class="variable">ended</span> = <span class="variable">true</span>
+            })
+        }
+    })
+}</code></pre>
+</td>
+</tr>
+<tr class="code">
+<td class="docs">
+<p>Read up to <code>num</code> elements from the stream.</p>
+
+<h2></h2>
+
+<ul><li><p><strong>param</strong>: <em>Integer</em>  num</p></li><li><p><strong>return</strong>: <em>this</em></p></li><li><p><strong>api</strong>: <em>public</em></p></li></ul>
+</td>
+<td class="code">
+<pre><code><span class="variable">io</span>.<span class="variable">prototype</span>.<span class="variable">limit</span> = <span class="variable">io</span>.<span class="variable">prototype</span>.<span class="variable">head</span> = <span class="keyword">function</span> (<span class="variable">num</span>) {
+    <span class="this">this</span>.<span class="keyword">default</span>(<span class="variable">arguments</span>, <span class="number integer">1</span>)
+
+    <span class="keyword">return</span> <span class="this">this</span>.<span class="variable">extend</span>(<span class="keyword">function</span> (<span class="variable">stream</span>) {
+        <span class="keyword">return</span> <span class="keyword">function</span> (<span class="variable">emit</span>, <span class="variable">end</span>) {
+            <span class="variable">stream</span>(<span class="keyword">function</span> (<span class="variable">elem</span>) {
+                <span class="keyword">if</span> (<span class="variable">false</span> === <span class="variable">emit</span>(<span class="variable">elem</span>)){
+                    <span class="keyword">return</span> <span class="variable">false</span>
+                }
+                <span class="keyword">return</span> --<span class="variable">num</span> &<span class="variable">gt</span>; <span class="number integer">0</span>
+            }, <span class="variable">end</span>)
+        }
+    })
+}</code></pre>
+</td>
+</tr>
+<tr class="code">
+<td class="docs">
+<p>Skip the first <code>num</code> elements from the stream.</p>
+
+<h2></h2>
+
+<ul><li><p><strong>param</strong>: <em>Integer</em>  num (optional) - defaults to 1</p></li><li><p><strong>return</strong>: <em>this</em></p></li><li><p><strong>api</strong>: <em>public</em></p></li></ul>
+</td>
+<td class="code">
+<pre><code><span class="variable">io</span>.<span class="variable">prototype</span>.<span class="variable">skip</span> = <span class="keyword">function</span> (<span class="variable">num</span>) {
+    <span class="this">this</span>.<span class="keyword">default</span>(<span class="variable">arguments</span>, <span class="number integer">1</span>)
+
+    <span class="keyword">return</span> <span class="this">this</span>.<span class="variable">extend</span>(<span class="keyword">function</span> (<span class="variable">stream</span>) {
+        <span class="keyword">return</span> <span class="keyword">function</span> (<span class="variable">emit</span>, <span class="variable">end</span>) {
+            <span class="variable">stream</span>(<span class="keyword">function</span> (<span class="variable">elem</span>) {
+                <span class="keyword">if</span> (<span class="variable">num</span>-- &<span class="variable">lt</span>;= <span class="number integer">0</span>) {
+                    <span class="keyword">return</span> <span class="variable">emit</span>(<span class="variable">elem</span>)
+                }
+            }, <span class="variable">end</span>)
+        }
+    })
+}
+
+<span class="variable">io</span>.<span class="variable">prototype</span>.<span class="variable">array</span> = <span class="keyword">function</span> (<span class="variable">arr</span>) {
+    <span class="keyword">return</span> <span class="this">this</span>.<span class="variable">extend</span>(<span class="keyword">function</span> (<span class="variable">stream</span>) {
+        <span class="keyword">return</span> <span class="keyword">function</span> (<span class="variable">emit</span>, <span class="variable">end</span>) {
+            <span class="keyword">for</span> (<span class="keyword">var</span> <span class="variable">i</span> = <span class="number integer">0</span>, <span class="variable">l</span> = <span class="variable">arr</span>.<span class="variable">length</span>; <span class="variable">i</span> &<span class="variable">lt</span>; <span class="variable">l</span>; <span class="variable">i</span>++) {
+                <span class="keyword">if</span> (<span class="variable">false</span> === <span class="variable">emit</span>(<span class="variable">arr</span>[<span class="variable">i</span>])) {
+                    <span class="keyword">break</span>
+                }
+            }
+            <span class="variable">end</span> &<span class="variable">amp</span>;&<span class="variable">amp</span>; <span class="variable">end</span>()
+        }
+    })
+}
+
+<span class="variable">io</span>.<span class="variable">prototype</span>.<span class="variable">arguments</span> = <span class="keyword">function</span> () {
+    <span class="keyword">return</span> <span class="this">this</span>.<span class="variable">array</span>(<span class="variable">arguments</span>)
+}
+
+<span class="variable">io</span>.<span class="variable">prototype</span>.<span class="variable">range</span> = <span class="keyword">function</span> (<span class="variable">min</span>, <span class="variable">max</span>, <span class="variable">step</span>) {
+    <span class="this">this</span>.<span class="keyword">default</span>(<span class="variable">arguments</span>, <span class="number integer">0</span>, <span class="number integer">100</span>, <span class="number integer">1</span>)
+
+    <span class="keyword">return</span> <span class="this">this</span>.<span class="variable">extend</span>(<span class="keyword">function</span> (<span class="variable">stream</span>) {
+        <span class="keyword">return</span> <span class="keyword">function</span> (<span class="variable">emit</span>, <span class="variable">end</span>) {
+            <span class="keyword">for</span> (<span class="keyword">var</span> <span class="variable">i</span> = <span class="variable">min</span>; <span class="variable">i</span> &<span class="variable">lt</span>;= <span class="variable">max</span>; <span class="variable">i</span> += <span class="variable">step</span>) {
+                <span class="keyword">if</span> (<span class="variable">false</span> === <span class="variable">emit</span>(<span class="variable">i</span>)) {
+                    <span class="keyword">break</span>
+                }
+            }
+            <span class="variable">end</span> &<span class="variable">amp</span>;&<span class="variable">amp</span>; <span class="variable">end</span>()
+        }
+    })
+}
+
+<span class="variable">io</span>.<span class="variable">prototype</span>.<span class="variable">integers</span> = <span class="keyword">function</span> (<span class="variable">seed</span>, <span class="variable">step</span>) {
+    <span class="this">this</span>.<span class="keyword">default</span>(<span class="variable">arguments</span>, <span class="number integer">0</span>, <span class="number integer">1</span>)
+
+    <span class="keyword">return</span> <span class="this">this</span>.<span class="variable">extend</span>(<span class="keyword">function</span> (<span class="variable">stream</span>) {
+        <span class="keyword">return</span> <span class="keyword">function</span> (<span class="variable">emit</span>, <span class="variable">end</span>) {
+            <span class="keyword">while</span> (<span class="variable">emit</span>(<span class="variable">seed</span>) !== <span class="variable">false</span>) {
+                <span class="variable">seed</span> += <span class="variable">step</span>
+            }
+            <span class="variable">end</span> &<span class="variable">amp</span>;&<span class="variable">amp</span>; <span class="variable">end</span>()
+        }
+    })
+}
+
+<span class="variable">io</span>.<span class="variable">prototype</span>.<span class="variable">repeat</span> = <span class="keyword">function</span> (<span class="variable">seed</span>) {
+    <span class="this">this</span>.<span class="keyword">default</span>(<span class="variable">arguments</span>, <span class="number integer">0</span>)
+
+    <span class="keyword">return</span> <span class="this">this</span>.<span class="variable">extend</span>(<span class="keyword">function</span> (<span class="variable">stream</span>) {
+        <span class="keyword">return</span> <span class="keyword">function</span> (<span class="variable">emit</span>, <span class="variable">end</span>) {
+            <span class="keyword">while</span> (<span class="variable">emit</span>(<span class="variable">seed</span>) !== <span class="variable">false</span>)
+            <span class="variable">end</span> &<span class="variable">amp</span>;&<span class="variable">amp</span>; <span class="variable">end</span>()
+        }
+    })
+}
+
+<span class="variable">io</span>.<span class="variable">prototype</span>.<span class="variable">generate</span> = <span class="keyword">function</span> (<span class="variable">fn</span>) {
+    <span class="keyword">return</span> <span class="this">this</span>.<span class="variable">extend</span>(<span class="keyword">function</span> (<span class="variable">stream</span>) {
+        <span class="keyword">return</span> <span class="keyword">function</span> (<span class="variable">emit</span>, <span class="variable">end</span>) {
+            <span class="keyword">while</span> (<span class="variable">emit</span>(<span class="variable">fn</span>()) !== <span class="variable">false</span>)
+            <span class="variable">end</span> &<span class="variable">amp</span>;&<span class="variable">amp</span>; <span class="variable">end</span>()
+        }
+    })
+}
+
+<span class="variable">io</span>.<span class="variable">prototype</span>.<span class="variable">random</span> = <span class="keyword">function</span> (<span class="variable">min</span>, <span class="variable">max</span>) {
+    <span class="this">this</span>.<span class="keyword">default</span>(<span class="variable">arguments</span>, <span class="number integer">0</span>, <span class="number integer">100</span>)
+
+    <span class="keyword">return</span> <span class="this">this</span>.<span class="variable">generate</span>(<span class="keyword">function</span> () {
+       <span class="keyword">return</span> <span class="class">Math</span>.<span class="variable">round</span>(<span class="class">Math</span>.<span class="variable">random</span>() * (<span class="variable">max</span> - <span class="variable">min</span>)) + <span class="variable">min</span>
+    })
+}
+
+<span class="variable">io</span>.<span class="variable">prototype</span>.<span class="variable">last</span> = <span class="keyword">function</span> () {
+    <span class="keyword">return</span> <span class="this">this</span>.<span class="variable">extend</span>(<span class="keyword">function</span> (<span class="variable">stream</span>) {
+        <span class="keyword">return</span> <span class="keyword">function</span> (<span class="variable">emit</span>, <span class="variable">end</span>) {
+            <span class="keyword">var</span> <span class="variable">last</span>
+            <span class="variable">stream</span>(<span class="keyword">function</span> (<span class="variable">elem</span>) {
+                <span class="variable">last</span> = <span class="variable">elem</span>
+            }, <span class="keyword">function</span> (<span class="variable">err</span>) {
+                <span class="keyword">if</span> (<span class="keyword">typeof</span> <span class="variable">last</span> !== <span class="string">'undefined'</span>) {
+                    <span class="variable">emit</span>(<span class="variable">last</span>)
+                }
+                <span class="variable">end</span> &<span class="variable">amp</span>;&<span class="variable">amp</span>; <span class="variable">end</span>()
+            })
+        }
+    })
+}
+
+<span class="variable">io</span>.<span class="variable">prototype</span>.<span class="variable">first</span> = <span class="keyword">function</span> () {
+    <span class="keyword">return</span> <span class="this">this</span>.<span class="variable">limit</span>(<span class="number integer">1</span>)
+}
+
+<span class="variable">io</span>.<span class="variable">prototype</span>.<span class="variable">tail</span> = <span class="keyword">function</span> (<span class="variable">num</span>) {
+    <span class="keyword">if</span> (!<span class="variable">num</span>) {
+        <span class="keyword">return</span> <span class="this">this</span>.<span class="variable">last</span>()
+    }
+    <span class="keyword">return</span> <span class="this">this</span>.<span class="variable">compress</span>().<span class="variable">extend</span>(<span class="keyword">function</span> (<span class="variable">stream</span>) {
+        <span class="keyword">return</span> <span class="keyword">function</span> (<span class="variable">emit</span>, <span class="variable">end</span>) {
+            <span class="variable">stream</span>(<span class="keyword">function</span> (<span class="variable">elem</span>) {
+                <span class="keyword">var</span> <span class="variable">ended</span> = <span class="variable">false</span>
+                <span class="variable">elem</span>.<span class="variable">slice</span>(-<span class="number integer">1</span> * <span class="variable">num</span>).<span class="variable">forEach</span>(<span class="keyword">function</span> (<span class="variable">elem</span>) {
+                    <span class="keyword">if</span> (!<span class="variable">ended</span> &<span class="variable">amp</span>;&<span class="variable">amp</span>; <span class="variable">false</span> === <span class="variable">emit</span>(<span class="variable">elem</span>)) {
+                        <span class="variable">ended</span> = <span class="variable">true</span>
+                    }
+                });
+                <span class="keyword">return</span> <span class="variable">ended</span>
+            }, <span class="variable">end</span>)
+        }
+    })
+}
+
+<span class="variable">io</span>.<span class="variable">prototype</span>.<span class="variable">append</span> = <span class="keyword">function</span> () {
+    <span class="keyword">var</span> <span class="variable">streams</span> = <span class="this">this</span>.<span class="variable">collect</span>(<span class="variable">arguments</span>)
+    <span class="variable">streams</span>.<span class="variable">unshift</span>(<span class="this">this</span>)
+
+    <span class="keyword">return</span> <span class="this">this</span>.<span class="variable">extend</span>(<span class="keyword">function</span> (<span class="variable">stream</span>) {
+        <span class="keyword">return</span> <span class="keyword">function</span> (<span class="variable">emit</span>, <span class="variable">end</span>) {
+            <span class="keyword">var</span> <span class="variable">stream</span>, <span class="variable">ended</span> = <span class="variable">false</span>
+            <span class="keyword">function</span> <span class="variable">next</span>() {
+                <span class="keyword">if</span> (<span class="variable">stream</span> = <span class="variable">streams</span>.<span class="variable">shift</span>()) {
+                    <span class="keyword">return</span> !<span class="variable">ended</span> &<span class="variable">amp</span>;&<span class="variable">amp</span>; <span class="variable">stream</span>.<span class="variable">stream</span>(<span class="keyword">function</span> (<span class="variable">elem</span>) {
+                        <span class="keyword">if</span> (!<span class="variable">ended</span> &<span class="variable">amp</span>;&<span class="variable">amp</span>; <span class="variable">false</span> === <span class="variable">emit</span>(<span class="variable">elem</span>)) {
+                            <span class="variable">ended</span> = <span class="variable">true</span>
+                            <span class="keyword">return</span> <span class="variable">false</span>
+                        }
+                    }, <span class="keyword">function</span> (<span class="variable">err</span>) {
+                        !<span class="variable">ended</span> &<span class="variable">amp</span>;&<span class="variable">amp</span>; <span class="variable">next</span>()
+                    })
+                }
+                <span class="variable">end</span> &<span class="variable">amp</span>;&<span class="variable">amp</span>; <span class="variable">end</span>()
+            }
+        }
+    })
+}
+
+<span class="variable">io</span>.<span class="variable">prototype</span>.<span class="variable">prepend</span> = <span class="keyword">function</span> () {
+    <span class="keyword">var</span> <span class="variable">streams</span> = <span class="this">this</span>.<span class="variable">collect</span>(<span class="variable">arguments</span>)
+    <span class="variable">streams</span>.<span class="variable">push</span>(<span class="this">this</span>)
+
+    <span class="keyword">return</span> <span class="this">this</span>.<span class="variable">extend</span>(<span class="keyword">function</span> (<span class="variable">stream</span>) {
+        <span class="keyword">return</span> <span class="keyword">function</span> (<span class="variable">emit</span>, <span class="variable">end</span>) {
+            <span class="keyword">var</span> <span class="variable">stream</span>, <span class="variable">ended</span> = <span class="variable">false</span>
+            <span class="keyword">function</span> <span class="variable">next</span>() {
+                <span class="keyword">if</span> (!<span class="variable">ended</span> &<span class="variable">amp</span>;&<span class="variable">amp</span>; (<span class="variable">stream</span> = <span class="variable">streams</span>.<span class="variable">shift</span>())) {
+                    <span class="keyword">return</span> <span class="variable">stream</span>.<span class="variable">stream</span>(<span class="keyword">function</span> (<span class="variable">elem</span>) {
+                        <span class="keyword">if</span> (!<span class="variable">ended</span> &<span class="variable">amp</span>;&<span class="variable">amp</span>; <span class="variable">false</span> === <span class="variable">emit</span>(<span class="variable">elem</span>)) {
+                            <span class="variable">ended</span> = <span class="variable">true</span>
+                            <span class="keyword">return</span> <span class="variable">false</span>
+                        }
+                    }, <span class="keyword">function</span> (<span class="variable">err</span>) {
+                        !<span class="variable">ended</span> &<span class="variable">amp</span>;&<span class="variable">amp</span>; <span class="variable">next</span>()
+                    })
+                }
+                <span class="variable">end</span> &<span class="variable">amp</span>;&<span class="variable">amp</span>; <span class="variable">end</span>()
+            }
+        }
+    })
+}
+
+</code></pre>
+</td>
+</tr><tr class="filename"><td><h2 id="lib/io.string.js"><a href="#">io.string</a></h2></td><td>lib/io.string.js</td></tr><tr class="code">
+<td class="docs">
+<p>Module dependencies.
+ </p>
+</td>
+<td class="code">
+<pre><code><span class="keyword">var</span> <span class="variable">io</span> = <span class="variable">require</span>(<span class="string">'../'</span>)
+
+<span class="variable">io</span>.<span class="variable">prototype</span>.<span class="variable">split</span> = <span class="keyword">function</span> (<span class="variable">delim</span>, <span class="variable">quote</span>, <span class="variable">escape</span>) {
+    <span class="this">this</span>.<span class="keyword">default</span>(<span class="variable">arguments</span>, <span class="string">','</span>)
+
+    <span class="keyword">if</span> (!<span class="variable">quote</span>) {
+        <span class="keyword">return</span> <span class="this">this</span>.<span class="variable">map</span>(<span class="keyword">function</span> (<span class="variable">elem</span>) {
+            <span class="keyword">return</span> <span class="variable">elem</span>.<span class="variable">split</span>(<span class="variable">delim</span>)
+        })
+    }
+
+    <span class="comment">//Escape special regex chars</span>
+    <span class="keyword">var</span> <span class="variable">d</span>, <span class="variable">e</span>, <span class="variable">q</span>, <span class="variable">regex</span> = <span class="keyword">function</span> (<span class="variable">str</span>) {
+        <span class="keyword">return</span> <span class="variable">str</span>.<span class="variable">replace</span>(<span class="regexp">/[.*+?|()\\[\\]{}]/g</span>, <span class="string">'\\$&amp;'</span>)
+    }
+    <span class="variable">d</span> = <span class="variable">regex</span>(<span class="variable">delim</span>)
+    <span class="variable">q</span> = <span class="variable">regex</span>(<span class="variable">quote</span>)
+    <span class="variable">e</span> = <span class="variable">regex</span>(<span class="variable">escape</span> || <span class="variable">quote</span>)
+
+    <span class="keyword">var</span> <span class="variable">quote</span> = <span class="keyword">new</span> <span class="class">RegExp</span>(<span class="variable">e</span> + <span class="variable">q</span>, <span class="string">'g'</span>), <span class="variable">delimited</span> = <span class="keyword">new</span> <span class="class">RegExp</span>(
+        <span class="string">'('</span> + <span class="variable">d</span> + <span class="string">'|^)'</span> +
+        <span class="string">'(?:'</span> + <span class="variable">q</span> + <span class="string">'([^'</span> + <span class="variable">q</span> + <span class="string">']*(?:'</span> + <span class="variable">e</span> + <span class="variable">q</span> + <span class="string">'[^'</span> + <span class="variable">q</span> + <span class="string">']*)*)'</span> + <span class="variable">q</span> + <span class="string">'|'</span> +
+        <span class="string">'([^'</span> + <span class="variable">q</span> + <span class="variable">d</span> + <span class="string">']*))'</span>
+    , <span class="string">'g'</span>)
+
+    <span class="keyword">return</span> <span class="this">this</span>.<span class="variable">map</span>(<span class="keyword">function</span> (<span class="variable">line</span>) {
+        <span class="keyword">var</span> <span class="variable">matches</span>, <span class="variable">value</span>, <span class="variable">values</span> = []
+        <span class="keyword">while</span> (<span class="variable">matches</span> = <span class="variable">delimited</span>.<span class="variable">exec</span>(<span class="variable">line</span>)) {
+            <span class="keyword">if</span> (!<span class="variable">matches</span>[<span class="number integer">1</span>] &<span class="variable">amp</span>;&<span class="variable">amp</span>; <span class="variable">values</span>.<span class="variable">length</span>) {
+                <span class="keyword">break</span>
+            } <span class="keyword">else</span> <span class="keyword">if</span> (<span class="variable">matches</span>[<span class="number integer">2</span>]) {
+                <span class="variable">value</span> = <span class="variable">matches</span>[<span class="number integer">2</span>].<span class="variable">replace</span>(<span class="variable">quote</span>, <span class="variable">q</span>)
+            } <span class="keyword">else</span> {
+                <span class="variable">value</span> = <span class="variable">matches</span>[<span class="number integer">3</span>] || <span class="string">''</span>
+            }
+            <span class="variable">values</span>.<span class="variable">push</span>(<span class="variable">value</span>)
+        }
+        <span class="keyword">return</span> <span class="variable">values</span>
+    })
+}
+
+<span class="variable">io</span>.<span class="variable">prototype</span>.<span class="variable">join</span> = <span class="keyword">function</span> (<span class="variable">delim</span>, <span class="variable">quote</span>, <span class="variable">escape</span>) {
+    <span class="this">this</span>.<span class="keyword">default</span>(<span class="variable">arguments</span>, <span class="string">','</span>)
+
+    <span class="keyword">if</span> (!<span class="variable">quote</span>) {
+        <span class="keyword">return</span> <span class="this">this</span>.<span class="variable">map</span>(<span class="keyword">function</span> (<span class="variable">elem</span>) {
+            <span class="keyword">return</span> <span class="variable">elem</span>.<span class="variable">join</span>(<span class="variable">delim</span>)
+        })
+    }
+
+    <span class="keyword">var</span> <span class="variable">quote_reg</span> = <span class="keyword">new</span> <span class="class">RegExp</span>(<span class="string">'['</span> + <span class="variable">quote</span> + <span class="string">']'</span>, <span class="string">'g'</span>)
+      , <span class="variable">requires_quotes</span> = <span class="keyword">new</span> <span class="class">RegExp</span>(<span class="string">'['</span> + <span class="variable">delim</span> + <span class="string">'\r\n]'</span>)
+
+    <span class="variable">escape</span> = <span class="variable">escape</span> || <span class="variable">quote</span>
+
+    <span class="keyword">return</span> <span class="this">this</span>.<span class="variable">map</span>(<span class="keyword">function</span> (<span class="variable">values</span>) {
+        <span class="keyword">if</span> (<span class="class">Array</span>.<span class="variable">isArray</span>(<span class="variable">values</span>)) {
+            <span class="keyword">var</span> <span class="variable">quoted_values</span> = [], <span class="variable">value</span>, <span class="variable">i</span> = <span class="number integer">0</span>, <span class="variable">l</span> = <span class="variable">values</span>.<span class="variable">length</span>
+            <span class="keyword">for</span> (; <span class="variable">i</span> &<span class="variable">lt</span>; <span class="variable">l</span>; <span class="variable">i</span>++) {
+                <span class="variable">value</span> = <span class="variable">values</span>[<span class="variable">i</span>] == <span class="keyword">null</span> ? <span class="string">''</span> : <span class="string">''</span> + <span class="variable">values</span>[<span class="variable">i</span>]
+                <span class="keyword">if</span> (<span class="variable">value</span>.<span class="variable">indexOf</span>(<span class="variable">quote</span>) &<span class="variable">gt</span>; -<span class="number integer">1</span>) {
+                    <span class="variable">value</span> = <span class="variable">quote</span> + <span class="variable">value</span>.<span class="variable">replace</span>(<span class="variable">quote_reg</span>, <span class="variable">escape</span> + <span class="variable">quote</span>) + <span class="variable">quote</span>
+                } <span class="keyword">else</span> <span class="keyword">if</span> (<span class="variable">requires_quotes</span>.<span class="variable">test</span>(<span class="variable">value</span>)) {
+                    <span class="variable">value</span> = <span class="variable">quote</span> + <span class="variable">value</span> + <span class="variable">quote</span>
+                }
+                <span class="variable">quoted_values</span>.<span class="variable">push</span>(<span class="variable">value</span>)
+            }
+            <span class="variable">values</span> = <span class="variable">quoted_values</span>.<span class="variable">join</span>(<span class="variable">delim</span>)
+        }
+        <span class="keyword">return</span> <span class="variable">values</span>
+    })
+}
+
+</code></pre>
+</td>
+</tr><tr class="filename"><td><h2 id="lib/io.util.js"><a href="#">io.util</a></h2></td><td>lib/io.util.js</td></tr><tr class="code">
+<td class="docs">
+<p>Module dependencies.
+ </p>
+</td>
+<td class="code">
+<pre><code><span class="keyword">var</span> <span class="variable">io</span> = <span class="variable">require</span>(<span class="string">'../'</span>)
+
+<span class="variable">io</span>.<span class="variable">prototype</span>.<span class="variable">stream</span> = <span class="keyword">function</span> (<span class="variable">emit</span>, <span class="variable">end</span>) {
+    <span class="variable">end</span> &<span class="variable">amp</span>;&<span class="variable">amp</span>; <span class="variable">end</span>()
+}
+
+<span class="variable">io</span>.<span class="variable">prototype</span>.<span class="variable">extend</span> = <span class="keyword">function</span> (<span class="variable">extend</span>) {
+    <span class="this">this</span>.<span class="variable">stream</span> = <span class="variable">extend</span>(<span class="this">this</span>.<span class="variable">stream</span>, <span class="this">this</span>)
+    <span class="keyword">return</span> <span class="this">this</span>
+}
+
+<span class="variable">io</span>.<span class="variable">prototype</span>.<span class="keyword">default</span> = <span class="keyword">function</span> (<span class="variable">args</span>) {
+    <span class="keyword">var</span> <span class="variable">i</span>, <span class="variable">l</span>, <span class="variable">k</span>, <span class="variable">defaults</span> = <span class="class">Array</span>.<span class="variable">prototype</span>.<span class="variable">slice</span>.<span class="variable">call</span>(<span class="variable">arguments</span>, <span class="number integer">1</span>)
+    <span class="keyword">for</span> (<span class="variable">i</span> = <span class="number integer">0</span>, <span class="variable">l</span> = <span class="variable">defaults</span>.<span class="variable">length</span>; <span class="variable">i</span> &<span class="variable">lt</span>; <span class="variable">l</span>; <span class="variable">i</span>++) {
+        <span class="keyword">if</span> (<span class="keyword">typeof</span> <span class="variable">defaults</span>[<span class="variable">i</span>] === <span class="string">'object'</span>) {
+            <span class="keyword">if</span> (<span class="keyword">typeof</span> <span class="variable">args</span>[<span class="variable">i</span>] === <span class="string">'undefined'</span> || <span class="keyword">null</span> == <span class="variable">args</span>[<span class="variable">i</span>]) {
+                <span class="variable">args</span>[<span class="variable">i</span>] = <span class="variable">defaults</span>[<span class="variable">i</span>]
+            } <span class="keyword">else</span> {
+                <span class="keyword">for</span> (<span class="variable">k</span> <span class="keyword">in</span> <span class="variable">defaults</span>[<span class="variable">i</span>]) {
+                    <span class="keyword">if</span> (<span class="keyword">typeof</span> <span class="variable">args</span>[<span class="variable">i</span>][<span class="variable">k</span>] === <span class="string">'undefined'</span>) {
+                        <span class="variable">args</span>[<span class="variable">i</span>][<span class="variable">k</span>] = <span class="variable">defaults</span>[<span class="variable">i</span>][<span class="variable">k</span>]
+                    }
+                }
+            }
+        } <span class="keyword">else</span> {
+            <span class="variable">args</span>[<span class="variable">i</span>] = <span class="variable">args</span>[<span class="variable">i</span>] || <span class="variable">defaults</span>[<span class="variable">i</span>]
+        }
+    }
+    <span class="keyword">return</span> <span class="variable">args</span>
+}
+
+<span class="variable">io</span>.<span class="variable">prototype</span>.<span class="variable">collect</span> = <span class="keyword">function</span> (<span class="variable">args</span>) {
+    <span class="keyword">return</span> <span class="class">Array</span>.<span class="variable">prototype</span>.<span class="variable">slice</span>.<span class="variable">call</span>(<span class="variable">args</span>)
+}
+
+<span class="keyword">var</span> <span class="variable">lambdaCache</span> = {}
+
+<span class="variable">io</span>.<span class="variable">prototype</span>.<span class="variable">lambda</span> = <span class="keyword">function</span> (<span class="variable">fn</span>) {
+    <span class="keyword">if</span> (<span class="keyword">typeof</span> <span class="variable">fn</span> === <span class="string">'string'</span>) {
+        <span class="keyword">if</span> (<span class="keyword">typeof</span> <span class="variable">lambdaCache</span>[<span class="variable">fn</span>] !== <span class="string">'undefined'</span>) {
+            <span class="keyword">return</span> <span class="variable">lambdaCache</span>[<span class="variable">fn</span>]
+        }
+        <span class="keyword">var</span> <span class="variable">key</span> = <span class="variable">fn</span>
+        <span class="keyword">if</span> (<span class="variable">fn</span>.<span class="variable">match</span>(<span class="regexp">/\breturn\b/</span>)) {
+            <span class="variable">fn</span> = <span class="keyword">new</span> <span class="class">Function</span>(<span class="variable">fn</span>)
+        } <span class="keyword">else</span> {
+            <span class="keyword">var</span> <span class="variable">params</span> = [], <span class="variable">sections</span> = <span class="variable">fn</span>.<span class="variable">split</span>(<span class="regexp">/\s*-&gt;\s*/m</span>)
+            <span class="keyword">if</span> (<span class="variable">sections</span>.<span class="variable">length</span> &<span class="variable">gt</span>; <span class="number integer">1</span>) {
+                <span class="keyword">while</span> (<span class="variable">sections</span>.<span class="variable">length</span>) {
+                    <span class="variable">fn</span> = <span class="variable">sections</span>.<span class="variable">pop</span>()
+                    <span class="variable">params</span> = <span class="variable">sections</span>.<span class="variable">pop</span>().<span class="variable">split</span>(<span class="regexp">/\s*,\s*|\s+/m</span>)
+                    <span class="variable">sections</span>.<span class="variable">length</span> &<span class="variable">amp</span>;&<span class="variable">amp</span>; <span class="variable">sections</span>.<span class="variable">push</span>(<span class="string">'(function('</span>+<span class="variable">params</span>+<span class="string">'){return ('</span>+<span class="variable">fn</span>+<span class="string">')})'</span>)
+                }
+            } <span class="keyword">else</span> <span class="keyword">if</span> (<span class="variable">fn</span>.<span class="variable">match</span>(<span class="regexp">/\b_\b/</span>)) {
+                <span class="variable">params</span> = <span class="string">'_'</span>
+            } <span class="keyword">else</span> {
+                <span class="keyword">var</span> <span class="variable">leftSection</span> = <span class="variable">fn</span>.<span class="variable">match</span>(<span class="regexp">/^\s*(?:[+*\/</span>%&<span class="variable">amp</span>;|\^\.=&<span class="variable">lt</span>;&<span class="variable">gt</span>;]|!=)/<span class="variable">m</span>),
+                    <span class="variable">rightSection</span> = <span class="variable">fn</span>.<span class="variable">match</span>(<span class="regexp">/[+\-*\/</span>%&<span class="variable">amp</span>;|\^\.=&<span class="variable">lt</span>;&<span class="variable">gt</span>;!]\<span class="variable">s</span>*$/<span class="variable">m</span>)
+                <span class="keyword">if</span> (<span class="variable">leftSection</span> || <span class="variable">rightSection</span>) {
+                    <span class="keyword">if</span> (<span class="variable">leftSection</span>) {
+                        <span class="variable">params</span>.<span class="variable">push</span>(<span class="string">'$1'</span>)
+                        <span class="variable">fn</span> = <span class="string">'$1'</span> + <span class="variable">fn</span>
+                    }
+                    <span class="keyword">if</span> (<span class="variable">rightSection</span>) {
+                        <span class="variable">params</span>.<span class="variable">push</span>(<span class="string">'$2'</span>)
+                        <span class="variable">fn</span> = <span class="variable">fn</span> + <span class="string">'$2'</span>
+                    }
+                } <span class="keyword">else</span> {
+                    <span class="keyword">var</span> <span class="variable">vars</span> = <span class="this">this</span>.<span class="variable">replace</span>(<span class="regexp">/(?:\b[A-Z]|\.[a-zA-Z_$])[a-zA-Z_$\d]*|[a-zA-Z_$][a-zA-Z_$\d]*\s*:|this|arguments|'(?:[^'\\]|\\.)*'|&quot;(?:[^&quot;\\]|\\.)*&quot;/g</span>, <span class="string">''</span>)
+                                   .<span class="variable">match</span>(<span class="regexp">/([a-z_$][a-z_$\d]*)/gi</span>) || []
+                    <span class="keyword">for</span> (<span class="keyword">var</span> <span class="variable">i</span> = <span class="number integer">0</span>, <span class="variable">v</span>; <span class="variable">v</span> = <span class="variable">vars</span>[<span class="variable">i</span>++]; ) {
+                        <span class="variable">params</span>.<span class="variable">indexOf</span>(<span class="variable">v</span>) &<span class="variable">gt</span>;= <span class="number integer">0</span> || <span class="variable">params</span>.<span class="variable">push</span>(<span class="variable">v</span>)
+                    }
+                }
+            }
+            <span class="variable">fn</span> = <span class="keyword">new</span> <span class="class">Function</span>(<span class="variable">params</span>, <span class="string">'return ('</span> + <span class="variable">fn</span> + <span class="string">')'</span>)
+            <span class="variable">lambdaCache</span>[<span class="variable">key</span>] = <span class="variable">fn</span>
+        }
+    }
+    <span class="keyword">return</span> <span class="variable">fn</span>
+}
+
+<span class="variable">io</span>.<span class="variable">prototype</span>.<span class="variable">async</span> = <span class="keyword">function</span> (<span class="variable">options</span>, <span class="variable">async_fn</span>, <span class="variable">callback</span>) {
+    <span class="keyword">var</span> <span class="variable">retries</span> = <span class="number integer">0</span>
+      , <span class="variable">timeout</span> = <span class="number integer">0</span>
+      , <span class="variable">timer</span>
+      , <span class="variable">complete</span> = <span class="variable">false</span>
+
+    <span class="keyword">if</span> (<span class="keyword">typeof</span> <span class="variable">options</span> === <span class="string">'function'</span>) {
+        <span class="variable">callback</span> = <span class="variable">async_fn</span>
+        <span class="variable">async_fn</span> = <span class="variable">options</span>
+    } <span class="keyword">else</span> {
+        <span class="variable">retries</span> = <span class="variable">options</span>.<span class="variable">retries</span> || <span class="number integer">0</span>
+        <span class="variable">timeout</span> = <span class="variable">options</span>.<span class="variable">timeout</span> || <span class="number integer">0</span>
+    }
+
+    <span class="keyword">if</span> (<span class="variable">timeout</span>) {
+        <span class="variable">timer</span> = <span class="variable">setTimeout</span>(<span class="keyword">function</span> () {
+            <span class="variable">handle</span>(<span class="keyword">new</span> <span class="class">Error</span>(<span class="string">'timeout'</span>))
+        }, <span class="number integer">1000</span> * <span class="variable">timeout</span>)
+    }
+
+    <span class="variable">async_fn</span>(<span class="keyword">function</span> <span class="variable">handle</span>(<span class="variable">err</span>) {
+        <span class="keyword">if</span> (<span class="variable">err</span> &<span class="variable">amp</span>;&<span class="variable">amp</span>; <span class="variable">retries</span>--) {
+            <span class="keyword">return</span> <span class="variable">async_fn</span>(<span class="variable">handle</span>)
+        }
+        <span class="keyword">if</span> (!<span class="variable">complete</span>) {
+            <span class="keyword">if</span> (<span class="variable">timer</span>) {
+                <span class="variable">clearTimeout</span>(<span class="variable">timer</span>)
+            }
+            <span class="variable">complete</span> = <span class="variable">true</span>
+            <span class="keyword">return</span> <span class="variable">callback</span>.<span class="variable">apply</span>(<span class="this">this</span>, <span class="variable">arguments</span>)
+        }
+    })
+}
+
+<span class="variable">io</span>.<span class="variable">prototype</span>.<span class="variable">toObject</span> = <span class="keyword">function</span> (<span class="variable">elem</span>, <span class="variable">key</span>) {
+    <span class="keyword">if</span> (<span class="keyword">typeof</span> <span class="variable">elem</span> !== <span class="string">'object'</span>) {
+        <span class="keyword">var</span> <span class="variable">obj</span> = {}
+        <span class="variable">obj</span>[<span class="variable">key</span>] = <span class="variable">elem</span>
+        <span class="variable">elem</span> = <span class="variable">obj</span>
+    }
+    <span class="keyword">return</span> <span class="variable">elem</span>
+}
+
+<span class="variable">io</span>.<span class="variable">prototype</span>.<span class="variable">each</span> = <span class="keyword">function</span> () {
+    <span class="this">this</span>.<span class="variable">stream</span>.<span class="variable">apply</span>(<span class="this">this</span>, <span class="variable">arguments</span>);
+    <span class="keyword">return</span> <span class="this">this</span>
+}
+
+</code></pre>
+</td>
+</tr>	</body>
+</html></tbody></table>
